@@ -1,0 +1,101 @@
+name: Blusher
+options:
+  bundleIdPrefix: com.nixboi42
+  deploymentTarget:
+    macOS: "15.0"
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    ARCHS: arm64
+    MACOSX_DEPLOYMENT_TARGET: 15.0
+    CURRENT_PROJECT_VERSION: 2
+    MARKETING_VERSION: 0.1.0
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: J6UMA79JLS
+    CODE_SIGN_IDENTITY: Apple Development
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.7.0
+targets:
+  BlusherCore:
+    type: framework
+    platform: macOS
+    sources: [Sources/BlusherCore]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nixboi42.BlusherCore
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+  BlusherCameraExtension:
+    type: system-extension
+    platform: macOS
+    sources: [Sources/BlusherCameraExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nixboi42.Blusher.CameraExtension
+        INFOPLIST_FILE: Config/CameraExtension-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Config/CameraExtension.entitlements
+        SKIP_INSTALL: YES
+    dependencies:
+      - framework: CoreMediaIO.framework
+  Blusher:
+    type: application
+    platform: macOS
+    sources: [Sources/Blusher]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nixboi42.Blusher
+        INFOPLIST_FILE: Config/Blusher-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Config/Blusher.entitlements
+        PRODUCT_NAME: Blusher
+    dependencies:
+      - target: BlusherCore
+      - target: BlusherCameraExtension
+        embed: true
+      - package: Sparkle
+  BlusherLocal:
+    type: application
+    platform: macOS
+    productName: Blusher
+    sources: [Sources/Blusher]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nixboi42.Blusher.Local
+        INFOPLIST_FILE: Config/Blusher-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Config/BlusherLocal.entitlements
+        PRODUCT_NAME: Blusher
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: LOCAL_BUILD
+      configs:
+        Debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: LOCAL_BUILD DEBUG
+        Release:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: LOCAL_BUILD
+    dependencies:
+      - target: BlusherCore
+  BlusherTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [Tests/BlusherTests]
+    dependencies:
+      - target: BlusherCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nixboi42.BlusherTests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  Blusher:
+    build:
+      targets:
+        Blusher: all
+        BlusherTests: [test]
+    test:
+      targets: [BlusherTests]
+  BlusherLocal:
+    build:
+      targets:
+        BlusherLocal: all
+        BlusherTests: [test]
+    test:
+      targets: [BlusherTests]
